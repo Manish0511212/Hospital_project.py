@@ -1,0 +1,45 @@
+import sqlite3
+import pandas as pd
+
+conn = sqlite3.connect("hospital.db")
+
+# 1. Most common diseases
+disease_count = pd.read_sql("""
+SELECT disease, COUNT(*) AS patient_count
+FROM Patients
+GROUP BY disease
+ORDER BY patient_count DESC
+""", conn)
+print(disease_count)
+
+# 2. Doctor with most patients
+doctor_patients = pd.read_sql("""
+SELECT d.name, COUNT(DISTINCT a.patient_id) AS total_patients
+FROM Doctors d
+JOIN Appointments a ON d.doctor_id = a.doctor_id
+GROUP BY d.name
+ORDER BY total_patients DESC
+""", conn)
+print(doctor_patients)
+
+# 3. Monthly revenue
+monthly_revenue = pd.read_sql("""
+SELECT strftime('%Y-%m', date) AS month, SUM(amount) AS revenue
+FROM Bills
+GROUP BY month
+ORDER BY month
+""", conn)
+print(monthly_revenue)
+
+# 4. Bed availability summary
+bed_availability = pd.read_sql("""
+SELECT ward,
+       COUNT(*) AS total_beds,
+       SUM(is_available) AS available_beds,
+       COUNT(*) - SUM(is_available) AS occupied_beds
+FROM Beds
+GROUP BY ward
+""", conn)
+print(bed_availability)
+
+conn.close()
