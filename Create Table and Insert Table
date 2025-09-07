@@ -1,0 +1,116 @@
+import sqlite3
+
+# Connect to SQLite database
+conn = sqlite3.connect("hospital.db")
+cursor = conn.cursor()
+
+# Drop tables if they exist
+cursor.executescript("""
+DROP TABLE IF EXISTS Patients;
+DROP TABLE IF EXISTS Doctors;
+DROP TABLE IF EXISTS Appointments;
+DROP TABLE IF EXISTS Bills;
+DROP TABLE IF EXISTS Beds;
+""")
+
+# Create tables
+cursor.executescript("""
+CREATE TABLE Patients (
+    patient_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    age INTEGER,
+    gender TEXT,
+    disease TEXT
+);
+
+CREATE TABLE Doctors (
+    doctor_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    specialization TEXT
+);
+
+CREATE TABLE Appointments (
+    app_id INTEGER PRIMARY KEY,
+    patient_id INTEGER,
+    doctor_id INTEGER,
+    date TEXT,
+    status TEXT,
+    FOREIGN KEY (patient_id) REFERENCES Patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id)
+);
+
+CREATE TABLE Bills (
+    bill_id INTEGER PRIMARY KEY,
+    patient_id INTEGER,
+    amount REAL,
+    date TEXT,
+    FOREIGN KEY (patient_id) REFERENCES Patients(patient_id)
+);
+
+CREATE TABLE Beds (
+    bed_id INTEGER PRIMARY KEY,
+    ward TEXT,
+    bed_number TEXT,
+    is_available INTEGER
+);
+""")
+
+# Insert sample data
+cursor.executescript("""
+INSERT INTO Patients (patient_id, name, age, gender, disease) VALUES
+(1, 'Rahul Sharma', 30, 'Male', 'Fever'),
+(2, 'Priya Singh', 45, 'Female', 'Diabetes'),
+(3, 'Amit Kumar', 25, 'Male', 'Asthma'),
+(4, 'Neha Patel', 35, 'Female', 'Fever'),
+(5, 'Vikram Joshi', 50, 'Male', 'Diabetes'),
+(6, 'Anjali Mehta', 28, 'Female', 'Hypertension'),
+(7, 'Suresh Reddy', 40, 'Male', 'Back Pain'),
+(8, 'Kavita Desai', 33, 'Female', 'Migraine'),
+(9, 'Rajesh Nair', 60, 'Male', 'Arthritis'),
+(10, 'Sunita Iyer', 55, 'Female', 'Thyroid');
+
+INSERT INTO Doctors (doctor_id, name, specialization) VALUES
+(1, 'Dr. Sharma', 'Cardiologist'),
+(2, 'Dr. Gupta', 'General Physician'),
+(3, 'Dr. Reddy', 'Pulmonologist'),
+(4, 'Dr. Iyer', 'Neurologist'),
+(5, 'Dr. Patel', 'Orthopedic'),
+(6, 'Dr. Singh', 'Endocrinologist');
+
+INSERT INTO Appointments (app_id, patient_id, doctor_id, date, status) VALUES
+(1, 1, 2, '2025-09-01', 'Completed'),
+(2, 2, 1, '2025-09-03', 'Pending'),
+(3, 3, 3, '2025-09-05', 'Completed'),
+(4, 4, 2, '2025-09-06', 'Completed'),
+(5, 5, 1, '2025-09-07', 'Pending'),
+(6, 6, 6, '2025-09-08', 'Completed'),
+(7, 7, 5, '2025-09-09', 'Completed'),
+(8, 8, 4, '2025-09-10', 'Pending'),
+(9, 9, 5, '2025-09-11', 'Completed'),
+(10, 10, 6, '2025-09-12', 'Completed');
+
+INSERT INTO Bills (bill_id, patient_id, amount, date) VALUES
+(1, 1, 500.00, '2025-09-01'),
+(2, 3, 300.00, '2025-09-05'),
+(3, 4, 700.00, '2025-09-06'),
+(4, 6, 450.00, '2025-09-08'),
+(5, 7, 600.00, '2025-09-09'),
+(6, 9, 800.00, '2025-09-11'),
+(7, 10, 550.00, '2025-09-12');
+
+INSERT INTO Beds (bed_id, ward, bed_number, is_available) VALUES
+(1, 'General', 'G-101', 1),
+(2, 'General', 'G-102', 0),
+(3, 'General', 'G-103', 1),
+(4, 'ICU', 'I-201', 0),
+(5, 'ICU', 'I-202', 1),
+(6, 'Maternity', 'M-301', 1),
+(7, 'Maternity', 'M-302', 0),
+(8, 'Pediatrics', 'P-401', 1),
+(9, 'Pediatrics', 'P-402', 1),
+(10, 'Surgery', 'S-501', 0);
+""")
+
+conn.commit()
+conn.close()
+print("✅ Database setup complete!")
