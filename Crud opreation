@@ -1,0 +1,30 @@
+import sqlite3
+
+conn = sqlite3.connect("hospital.db")
+cursor = conn.cursor()
+
+# Add a new patient
+def add_patient(name, age, gender, disease):
+    cursor.execute("INSERT INTO Patients (name, age, gender, disease) VALUES (?, ?, ?, ?)",
+                   (name, age, gender, disease))
+    conn.commit()
+    print(f"Added patient: {name}")
+
+# Update bed status
+def update_bed_status(bed_id, is_available):
+    cursor.execute("UPDATE Beds SET is_available = ? WHERE bed_id = ?", (is_available, bed_id))
+    conn.commit()
+    print(f"Updated bed {bed_id} availability to {is_available}")
+
+# Delete an appointment
+def delete_appointment(app_id):
+    cursor.execute("DELETE FROM Appointments WHERE app_id = ?", (app_id,))
+    conn.commit()
+    print(f"Deleted appointment {app_id}")
+
+# Example usage
+add_patient("Manish Kumar", 38, "Male", "Cold")
+update_bed_status(2, 1)
+delete_appointment(5)
+
+conn.close()
