@@ -1,0 +1,46 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import sqlite3
+
+conn = sqlite3.connect("hospital.db")
+
+# Disease Pie Chart
+disease_count = pd.read_sql("SELECT disease, COUNT(*) AS patient_count FROM Patients GROUP BY disease", conn)
+plt.figure(figsize=(6,6))
+plt.pie(disease_count['patient_count'], labels=disease_count['disease'], autopct='%1.1f%%', startangle=140)
+plt.title("Most Common Diseases")
+plt.show()
+
+# Doctor Bar Chart
+doctor_patients = pd.read_sql("""
+SELECT d.name, COUNT(DISTINCT a.patient_id) AS total_patients
+FROM Doctors d
+JOIN Appointments a ON d.doctor_id = a.doctor_id
+GROUP BY d.name
+""", conn)
+plt.figure(figsize=(8,5))
+plt.bar(doctor_patients['name'], doctor_patients['total_patients'], color='skyblue')
+plt.xlabel("Doctor")
+plt.ylabel("Number of Patients")
+plt.title("Doctor with Most Patients")
+plt.xticks(rotation=45)
+plt.show()
+
+# Bed availability Bar Chart
+bed_availability = pd.read_sql("""
+SELECT ward, SUM(is_available) AS available_beds, COUNT(*) - SUM(is_available) AS occupied_beds
+FROM Beds
+GROUP BY ward
+""", conn)
+index = range(len(bed_availability))
+bar_width = 0.35
+plt.bar(index, bed_availability['available_beds'], bar_width, label='Available', color='limegreen')
+plt.bar([i + bar_width for i in index], bed_availability['occupied_beds'], bar_width, label='Occupied', color='tomato')
+plt.xticks([i + bar_width/2 for i in index], bed_availability['ward'])
+plt.xlabel("Ward")
+plt.ylabel("Number of Beds")
+plt.title("Bed Availability by Ward")
+plt.legend()
+plt.show()
+
+conn.close()
